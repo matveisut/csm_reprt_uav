@@ -1,6 +1,6 @@
 from fastapi.testclient import TestClient
 from unittest.mock import patch, AsyncMock
-import networkx as nx
+
 from app.main import app
 
 client = TestClient(app)
