@@ -1,0 +1,10 @@
+fastapi==0.104.1
+uvicorn==0.24.0.post1
+pydantic==2.5.2
+asyncpg==0.28.0
+psycopg2-binary==2.9.9
+GeoAlchemy2==0.14.2
+SQLAlchemy==2.0.23
+ortools==9.8.3296
+networkx==3.2.1
+httpx==0.25.2

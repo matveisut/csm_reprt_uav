@@ -1,0 +1,67 @@
+version: '3.8'
+
+services:
+  db:
+    image: postgis/postgis:15-3.4
+    container_name: uav_postgres
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:-uav_admin}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-admin123}
+      POSTGRES_DB: ${POSTGRES_DB:-uav_routing}
+    ports:
+      - "5432:5432"
+    volumes:
+      - pg_data:/var/lib/postgresql/data
+      - ./db/init.sql:/docker-entrypoint-initdb.d/init.sql
+
+  api_gateway:
+    build: 
+      context: ./api_gateway
+    container_name: api_gateway
+    ports:
+      - "8000:8000"
+    environment:
+      - JWT_SECRET=supersecretkey
+      - ROUTE_PLANNER_URL=http://route_planner:8001
+      - THREAT_ASSESSOR_URL=http://threat_assessor:8002
+      - TELEMETRY_PROCESSOR_URL=http://telemetry_processor:8003
+    depends_on:
+      - route_planner
+      - threat_assessor
+      - telemetry_processor
+
+  route_planner:
+    build:
+      context: ./route_planner
+    container_name: route_planner
+    environment:
+      - POSTGRES_URL=postgresql://uav_admin:admin123@db:5432/uav_routing
+    ports:
+      - "8001:8001"
+    depends_on:
+      - db
+      
+  threat_assessor:
+    build:
+      context: ./threat_assessor
+    container_name: threat_assessor
+    environment:
+      - POSTGRES_URL=postgresql://uav_admin:admin123@db:5432/uav_routing
+    ports:
+      - "8002:8002"
+    depends_on:
+      - db
+
+  telemetry_processor:
+    build:
+      context: ./telemetry_processor
+    container_name: telemetry_processor
+    environment:
+      - POSTGRES_URL=postgresql://uav_admin:admin123@db:5432/uav_routing
+    ports:
+      - "8003:8003"
+    depends_on:
+      - db
+
+volumes:
+  pg_data:
